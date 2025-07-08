@@ -1,0 +1,28 @@
+{% extends 'mymlopsapp1/base.html' %}
+
+{% block title %}모델 학습{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>모델 학습</h2>
+    </div>
+    <div class="card-body">
+        {% if warning %}
+        <div class="alert alert-warning" role="alert">
+            {{ warning }}
+        </div>
+        {% endif %}
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">학습 시작</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

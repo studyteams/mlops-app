@@ -1,0 +1,32 @@
+{% extends 'mymlopsapp1/base.html' %}
+
+{% block title %}모델 설정 생성{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>새 모델 설정 생성</h2>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_name" class="form-label">모델 이름</label>
+                <input type="text" name="name" id="id_name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="id_algorithm" class="form-label">알고리즘</label>
+                <select name="algorithm" id="id_algorithm" class="form-select" required>
+                    <option value="">알고리즘 선택...</option>
+                    <option value="RandomForestClassifier">RandomForestClassifier</option>
+                    </select>
+            </div>
+            <div class="mb-3">
+                <label for="id_description" class="form-label">설명</label>
+                <textarea name="description" id="id_description" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">생성</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

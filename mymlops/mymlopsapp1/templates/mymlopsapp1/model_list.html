@@ -1,0 +1,39 @@
+{% extends 'mymlopsapp1/base.html' %}
+
+{% block title %}모델 설정 목록{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>모델 설정 목록</h2>
+    <a href="{% url 'model_create' %}" class="btn btn-success">새 모델 설정 생성</a>
+</div>
+
+{% if models %}
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>이름</th>
+            <th>알고리즘</th>
+            <th>설명</th>
+            <th>생성 날짜</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for model in models %}
+        <tr>
+            <td>{{ model.id }}</td>
+            <td>{{ model.name }}</td>
+            <td>{{ model.algorithm }}</td>
+            <td>{{ model.description|default:"-" }}</td>
+            <td>{{ model.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info" role="alert">
+    생성된 모델 설정이 없습니다. <a href="{% url 'model_create' %}">새 모델 설정을 생성</a>해주세요.
+</div>
+{% endif %}
+{% endblock %}

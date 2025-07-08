@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ experiment.name }} - 실험 상세{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>{{ experiment.name }}</h2>
+                    <p class="text-muted mb-0">v{{ experiment.version }} - {{ experiment.get_status_display }}</p>
+                </div>
+                <div>
+                    {% if experiment.status == 'planned' %}
+                        <a href="{% url 'mymlopsapp1:start_experiment' experiment.pk %}" class="btn btn-success">
+                            <i class="fas fa-play"></i> 실험 실행
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'mymlopsapp1:list_experiments' %}" class="btn btn-secondary">
+                        목록으로
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- 실험 정보 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">실험 정보</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ experiment.description|default:"설명 없음" }}</p>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>기본 정보</h6>
+                                    <p><strong>생성자:</strong> {{ experiment.created_by }}</p>
+                                    <p><strong>생성일:</strong> {{ experiment.created_at|date:"Y-m-d H:i" }}</p>
+                                    {% if experiment.started_at %}
+                                        <p><strong>시작일:</strong> {{ experiment.started_at|date:"Y-m-d H:i" }}</p>
+                                    {% endif %}
+                                    {% if experiment.completed_at %}
+                                        <p><strong>완료일:</strong> {{ experiment.completed_at|date:"Y-m-d H:i" }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>구성 요소</h6>
+                                    <p><strong>데이터셋:</strong> {{ experiment.dataset_config.name }}</p>
+                                    <p><strong>피처:</strong> {{ experiment.feature_config.name }}</p>
+                                    <p><strong>모델:</strong> {{ experiment.model_config.name }}</p>
+                                    <p><strong>자원:</strong> {{ experiment.resource_allocation.name }}</p>
+                                </div>
+                            </div>
+
+                            {% if experiment.tags %}
+                                <div class="mt-3">
+                                    <h6>태그</h6>
+                                    {% for tag in experiment.tags|safe|slice:"1:-1"|split:"," %}
+                                        <span class="badge bg-light text-dark">{{ tag|slice:"2:-1" }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 실행 기록 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">실행 기록</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if runs %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>실행 번호</th>
+                                                <th>상태</th>
+                                                <th>시작 시간</th>
+                                                <th>완료 시간</th>
+                                                <th>소요 시간</th>
+                                                <th>작업</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for run in runs %}
+                                            <tr>
+                                                <td>{{ run.run_number }}</td>
+                                                <td>
+                                                    <span class="badge {% if run.status == 'completed' %}bg-success{% elif run.status == 'running' %}bg-warning{% elif run.status == 'failed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                        {{ run.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ run.started_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                                                <td>{{ run.completed_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                                                <td>
+                                                    {% if run.duration_seconds %}
+                                                        {{ run.duration_seconds|floatformat:1 }}초
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'mymlopsapp1:experiment_run_detail' experiment.pk run.pk %}" class="btn btn-sm btn-outline-primary">
+                                                        상세보기
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">아직 실행 기록이 없습니다.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- 자원 할당 정보 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">자원 할당</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>CPU:</strong> {{ experiment.resource_allocation.cpu_cores }} 코어</p>
+                            <p><strong>메모리:</strong> {{ experiment.resource_allocation.memory_gb }}GB</p>
+                            <p><strong>GPU:</strong> {{ experiment.resource_allocation.gpu_count }}개</p>
+                            {% if experiment.resource_allocation.gpu_count > 0 %}
+                                <p><strong>GPU 메모리:</strong> {{ experiment.resource_allocation.gpu_memory_gb }}GB</p>
+                            {% endif %}
+                            <p><strong>최대 시간:</strong> {{ experiment.resource_allocation.max_training_time_hours }}시간</p>
+                        </div>
+                    </div>
+
+                    <!-- 모델 정보 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">모델 정보</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>타입:</strong> {{ experiment.model_config.model_type }}</p>
+                            <p><strong>파라미터:</strong></p>
+                            <pre class="bg-light p-2 rounded"><code>{{ experiment.model_config.parameters|default:"{}" }}</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- 최근 결과 -->
+                    {% if runs %}
+                        {% with latest_run=runs.first %}
+                            {% if latest_run.training_result %}
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">최근 결과</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if latest_run.training_result.accuracy %}
+                                        <p><strong>정확도:</strong> {{ latest_run.training_result.accuracy|floatformat:3 }}</p>
+                                    {% endif %}
+                                    {% if latest_run.training_result.precision %}
+                                        <p><strong>정밀도:</strong> {{ latest_run.training_result.precision|floatformat:3 }}</p>
+                                    {% endif %}
+                                    {% if latest_run.training_result.recall %}
+                                        <p><strong>재현율:</strong> {{ latest_run.training_result.recall|floatformat:3 }}</p>
+                                    {% endif %}
+                                    {% if latest_run.training_result.f1_score %}
+                                        <p><strong>F1 스코어:</strong> {{ latest_run.training_result.f1_score|floatformat:3 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}홈{% endblock %} {# 페이지 제목 설정 #}
+
+{% block content %} {# 페이지 고유 콘텐츠 시작 #}
+    <div class="jumbotron text-center bg-light p-4 rounded mb-5">
+        <h1 class="display-4">{{ message }}</h1>
+        <p class="lead">MLOps 플랫폼에 오신 것을 환영합니다! 이 서비스는 머신러닝 워크플로우를 간편하게 관리할 수 있도록 도와줍니다.</p>
+        <hr class="my-4">
+        <p>지금 바로 시작하여 데이터셋을 설정하고, 모델을 학습하며, 결과를 분석해 보세요.</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'mymlopsapp1:create_experiment' %}" role="button">새 실험 생성하기</a>
+    </div>
+
+    <!-- 대시보드 통계 -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h4 class="card-title">{{ total_experiments }}</h4>
+                    <p class="card-text">총 실험</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center bg-warning text-dark">
+                <div class="card-body">
+                    <h4 class="card-title">{{ running_experiments }}</h4>
+                    <p class="card-text">실행 중</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h4 class="card-title">{{ completed_experiments }}</h4>
+                    <p class="card-text">완료됨</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <h4 class="card-title">{{ total_models }}</h4>
+                    <p class="card-text">모델 설정</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 최근 실험 -->
+    {% if recent_experiments %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">최근 실험</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>실험명</th>
+                                    <th>버전</th>
+                                    <th>상태</th>
+                                    <th>생성일</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for experiment in recent_experiments %}
+                                <tr>
+                                    <td>{{ experiment.name }}</td>
+                                    <td>v{{ experiment.version }}</td>
+                                    <td>
+                                        <span class="badge {% if experiment.status == 'completed' %}bg-success{% elif experiment.status == 'running' %}bg-warning{% elif experiment.status == 'failed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ experiment.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ experiment.created_at|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'mymlopsapp1:experiment_detail' experiment.pk %}" class="btn btn-sm btn-outline-primary">
+                                            상세보기
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">데이터 관리</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">학습에 사용할 데이터셋을 업로드하고 관리합니다.</p>
+                    <a href="{% url 'mymlopsapp1:dataset_upload' %}" class="btn btn-sm btn-outline-info">데이터셋 업로드</a>
+                    <a href="{% url 'mymlopsapp1:list_dataset_configs' %}" class="btn btn-sm btn-outline-secondary ms-2">모든 데이터셋 보기</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">모델 및 피처 설정</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">다양한 피처 조합과 모델 파라미터를 정의합니다.</p>
+                    <a href="{% url 'mymlopsapp1:list_feature_configs' %}" class="btn btn-sm btn-outline-warning">피처 설정 관리</a>
+                    <a href="{% url 'mymlopsapp1:list_model_configs' %}" class="btn btn-sm btn-outline-secondary ms-2">모델 설정 관리</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">자원 관리</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">실험에 필요한 컴퓨팅 자원을 할당하고 관리합니다.</p>
+                    <a href="{% url 'mymlopsapp1:list_resource_allocations' %}" class="btn btn-sm btn-outline-success">자원 할당 관리</a>
+                    <a href="{% url 'mymlopsapp1:create_resource_allocation' %}" class="btn btn-sm btn-outline-secondary ms-2">새 자원 설정</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">실험 관리</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">실험을 생성하고 실행하며 결과를 추적합니다.</p>
+                    <a href="{% url 'mymlopsapp1:list_experiments' %}" class="btn btn-sm btn-outline-primary">실험 목록</a>
+                    <a href="{% url 'mymlopsapp1:create_experiment' %}" class="btn btn-sm btn-outline-secondary ms-2">새 실험 생성</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">결과 분석</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">학습된 모델의 성능을 평가하고 비교합니다.</p>
+                    <a href="{% url 'mymlopsapp1:model_results' %}" class="btn btn-sm btn-outline-secondary">최근 학습 결과 보기</a>
+                    <a href="{% url 'mymlopsapp1:compare_results' %}" class="btn btn-sm btn-outline-info ms-2">결과 비교</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">실험 비교</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">여러 실험의 결과를 비교하여 최적의 모델을 찾습니다.</p>
+                    <a href="{% url 'mymlopsapp1:compare_experiments' %}" class="btn btn-sm btn-outline-dark">실험 비교</a>
+                    <a href="{% url 'mymlopsapp1:train_model' %}" class="btn btn-sm btn-outline-secondary ms-2">직접 훈련</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} {# 페이지 고유 콘텐츠 끝 #}

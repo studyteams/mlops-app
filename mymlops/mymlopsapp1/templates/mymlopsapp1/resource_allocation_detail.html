@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}자원 할당 상세 정보{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>{{ allocation.name }}</h2>
+            <p class="text-muted">{{ allocation.description|default:"설명 없음" }}</p>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">자원 할당 정보</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>CPU 설정</h6>
+                            <p><strong>CPU 코어:</strong> {{ allocation.cpu_cores }}개</p>
+
+                            <h6>메모리 설정</h6>
+                            <p><strong>메모리:</strong> {{ allocation.memory_gb }}GB</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>GPU 설정</h6>
+                            <p><strong>GPU 개수:</strong> {{ allocation.gpu_count }}개</p>
+                            <p><strong>GPU 메모리:</strong> {{ allocation.gpu_memory_gb }}GB</p>
+
+                            <h6>시간 제한</h6>
+                            <p><strong>최대 훈련 시간:</strong> {{ allocation.max_training_time_hours }}시간</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="{% url 'mymlopsapp1:list_resource_allocations' %}" class="btn btn-secondary">
+                    목록으로 돌아가기
+                </a>
+                <a href="{% url 'mymlopsapp1:create_experiment' %}" class="btn btn-primary">
+                    이 자원으로 실험 생성
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

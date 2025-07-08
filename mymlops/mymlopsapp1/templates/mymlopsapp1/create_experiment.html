@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}실험 생성{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>새 실험 생성</h2>
+            <p class="text-muted">실험에 필요한 모든 구성 요소를 설정하세요.</p>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>기본 정보</h5>
+                                <div class="mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                                    {{ form.name }}
+                                    {% if form.name.help_text %}
+                                        <div class="form-text">{{ form.name.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">{{ form.name.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.version.id_for_label }}" class="form-label">{{ form.version.label }}</label>
+                                    {{ form.version }}
+                                    {% if form.version.help_text %}
+                                        <div class="form-text">{{ form.version.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.version.errors %}
+                                        <div class="text-danger">{{ form.version.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.created_by.id_for_label }}" class="form-label">{{ form.created_by.label }}</label>
+                                    {{ form.created_by }}
+                                    {% if form.created_by.help_text %}
+                                        <div class="form-text">{{ form.created_by.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.created_by.errors %}
+                                        <div class="text-danger">{{ form.created_by.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5>구성 요소</h5>
+                                <div class="mb-3">
+                                    <label for="{{ form.dataset_config.id_for_label }}" class="form-label">{{ form.dataset_config.label }}</label>
+                                    {{ form.dataset_config }}
+                                    {% if form.dataset_config.help_text %}
+                                        <div class="form-text">{{ form.dataset_config.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.dataset_config.errors %}
+                                        <div class="text-danger">{{ form.dataset_config.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.feature_config.id_for_label }}" class="form-label">{{ form.feature_config.label }}</label>
+                                    {{ form.feature_config }}
+                                    {% if form.feature_config.help_text %}
+                                        <div class="form-text">{{ form.feature_config.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.feature_config.errors %}
+                                        <div class="text-danger">{{ form.feature_config.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.model_config.id_for_label }}" class="form-label">{{ form.model_config.label }}</label>
+                                    {{ form.model_config }}
+                                    {% if form.model_config.help_text %}
+                                        <div class="form-text">{{ form.model_config.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.model_config.errors %}
+                                        <div class="text-danger">{{ form.model_config.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.resource_allocation.id_for_label }}" class="form-label">{{ form.resource_allocation.label }}</label>
+                                    {{ form.resource_allocation }}
+                                    {% if form.resource_allocation.help_text %}
+                                        <div class="form-text">{{ form.resource_allocation.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.resource_allocation.errors %}
+                                        <div class="text-danger">{{ form.resource_allocation.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% if form.description.help_text %}
+                                <div class="form-text">{{ form.description.help_text }}</div>
+                            {% endif %}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.tags_json.id_for_label }}" class="form-label">{{ form.tags_json.label }}</label>
+                            {{ form.tags_json }}
+                            {% if form.tags_json.help_text %}
+                                <div class="form-text">{{ form.tags_json.help_text }}</div>
+                            {% endif %}
+                            {% if form.tags_json.errors %}
+                                <div class="text-danger">{{ form.tags_json.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'mymlopsapp1:list_experiments' %}" class="btn btn-secondary">취소</a>
+                            <button type="submit" class="btn btn-primary">실험 생성</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}

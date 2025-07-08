@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}실험 목록{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>실험 목록</h2>
+                <a href="{% url 'mymlopsapp1:create_experiment' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 새 실험 생성
+                </a>
+            </div>
+
+            {% if experiments %}
+                <div class="row">
+                    {% for experiment in experiments %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{ experiment.name }}</h5>
+                                    <span class="badge {% if experiment.status == 'completed' %}bg-success{% elif experiment.status == 'running' %}bg-warning{% elif experiment.status == 'failed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ experiment.get_status_display }}
+                                    </span>
+                                </div>
+                                <small class="text-muted">v{{ experiment.version }}</small>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ experiment.description|default:"설명 없음"|truncatewords:20 }}</p>
+
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <strong>데이터셋:</strong> {{ experiment.dataset_config.name }}<br>
+                                        <strong>모델:</strong> {{ experiment.model_config.name }}<br>
+                                        <strong>자원:</strong> {{ experiment.resource_allocation.name }}
+                                    </small>
+                                </div>
+
+                                {% if experiment.tags %}
+                                    <div class="mb-2">
+                                        {% for tag in experiment.tags|safe|slice:"1:-1"|split:"," %}
+                                            <span class="badge bg-light text-dark">{{ tag|slice:"2:-1" }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                <div class="text-muted">
+                                    <small>
+                                        생성: {{ experiment.created_at|date:"Y-m-d H:i" }}<br>
+                                        {% if experiment.started_at %}
+                                            시작: {{ experiment.started_at|date:"Y-m-d H:i" }}<br>
+                                        {% endif %}
+                                        {% if experiment.completed_at %}
+                                            완료: {{ experiment.completed_at|date:"Y-m-d H:i" }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'mymlopsapp1:experiment_detail' experiment.pk %}" class="btn btn-sm btn-outline-primary">
+                                        상세보기
+                                    </a>
+                                    {% if experiment.status == 'planned' %}
+                                        <a href="{% url 'mymlopsapp1:start_experiment' experiment.pk %}" class="btn btn-sm btn-success">
+                                            실행
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h4 class="text-muted">아직 생성된 실험이 없습니다.</h4>
+                    <p class="text-muted">첫 번째 실험을 생성해보세요!</p>
+                    <a href="{% url 'mymlopsapp1:create_experiment' %}" class="btn btn-primary">
+                        실험 생성하기
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

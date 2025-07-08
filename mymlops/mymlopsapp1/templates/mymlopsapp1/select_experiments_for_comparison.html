@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}실험 비교 - 실험 선택{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>실험 비교</h2>
+            <p class="text-muted">비교할 실험을 2개 이상 선택하세요.</p>
+
+            {% if experiments %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        {% for experiment in experiments %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="experiments" value="{{ experiment.id }}" id="exp_{{ experiment.id }}">
+                                        <label class="form-check-label" for="exp_{{ experiment.id }}">
+                                            <strong>{{ experiment.name }}</strong>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">{{ experiment.description|default:"설명 없음"|truncatewords:15 }}</p>
+
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <strong>버전:</strong> v{{ experiment.version }}<br>
+                                            <strong>데이터셋:</strong> {{ experiment.dataset_config.name }}<br>
+                                            <strong>모델:</strong> {{ experiment.model_config.name }}<br>
+                                            <strong>자원:</strong> {{ experiment.resource_allocation.name }}
+                                        </small>
+                                    </div>
+
+                                    <div class="text-muted">
+                                        <small>
+                                            생성: {{ experiment.created_at|date:"Y-m-d H:i" }}<br>
+                                            {% if experiment.completed_at %}
+                                                완료: {{ experiment.completed_at|date:"Y-m-d H:i" }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <a href="{% url 'mymlopsapp1:experiment_detail' experiment.pk %}" class="btn btn-sm btn-outline-primary">
+                                        상세보기
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'mymlopsapp1:list_experiments' %}" class="btn btn-secondary">취소</a>
+                        <button type="submit" class="btn btn-primary">선택한 실험 비교</button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="text-center py-5">
+                    <h4 class="text-muted">완료된 실험이 없습니다.</h4>
+                    <p class="text-muted">비교할 실험을 먼저 실행해주세요.</p>
+                    <a href="{% url 'mymlopsapp1:list_experiments' %}" class="btn btn-primary">
+                        실험 목록으로
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .form-check-input:checked + .form-check-label {
+        font-weight: bold;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[name="experiments"]');
+    const submitBtn = document.querySelector('button[type="submit"]');
+
+    function updateSubmitButton() {
+        const checkedCount = document.querySelectorAll('input[name="experiments"]:checked').length;
+        submitBtn.disabled = checkedCount < 2;
+        submitBtn.textContent = checkedCount < 2 ?
+            `최소 2개 선택 필요 (${checkedCount}/2)` :
+            `선택한 실험 비교 (${checkedCount}개)`;
+    }
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSubmitButton);
+    });
+
+    updateSubmitButton();
+});
+</script>
+{% endblock %}

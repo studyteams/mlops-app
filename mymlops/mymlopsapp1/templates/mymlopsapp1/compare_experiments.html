@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}실험 비교 결과{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>실험 비교 결과</h2>
+                <a href="{% url 'mymlopsapp1:compare_experiments' %}" class="btn btn-secondary">
+                    다른 실험 비교
+                </a>
+            </div>
+
+            {% if experiments %}
+                <div class="row">
+                    {% for experiment in experiments %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{ experiment.name }}</h5>
+                                    <span class="badge {% if experiment.status == 'completed' %}bg-success{% elif experiment.status == 'running' %}bg-warning{% elif experiment.status == 'failed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ experiment.get_status_display }}
+                                    </span>
+                                </div>
+                                <small class="text-muted">v{{ experiment.version }}</small>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ experiment.description|default:"설명 없음" }}</p>
+
+                                <div class="mb-3">
+                                    <h6>구성 요소</h6>
+                                    <p><strong>데이터셋:</strong> {{ experiment.dataset_config.name }}</p>
+                                    <p><strong>모델:</strong> {{ experiment.model_config.name }}</p>
+                                    <p><strong>자원:</strong> {{ experiment.resource_allocation.name }}</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h6>자원 할당</h6>
+                                    <p><strong>CPU:</strong> {{ experiment.resource_allocation.cpu_cores }} 코어</p>
+                                    <p><strong>메모리:</strong> {{ experiment.resource_allocation.memory_gb }}GB</p>
+                                    <p><strong>GPU:</strong> {{ experiment.resource_allocation.gpu_count }}개</p>
+                                    {% if experiment.resource_allocation.gpu_count > 0 %}
+                                        <p><strong>GPU 메모리:</strong> {{ experiment.resource_allocation.gpu_memory_gb }}GB</p>
+                                    {% endif %}
+                                    <p><strong>최대 시간:</strong> {{ experiment.resource_allocation.max_training_time_hours }}시간</p>
+                                </div>
+
+                                {% if experiment.runs.exists %}
+                                    {% with latest_run=experiment.runs.first %}
+                                        {% if latest_run.training_result %}
+                                        <div class="mb-3">
+                                            <h6>최근 결과</h6>
+                                            {% if latest_run.training_result.accuracy %}
+                                                <p><strong>정확도:</strong> {{ latest_run.training_result.accuracy|floatformat:3 }}</p>
+                                            {% endif %}
+                                            {% if latest_run.training_result.precision %}
+                                                <p><strong>정밀도:</strong> {{ latest_run.training_result.precision|floatformat:3 }}</p>
+                                            {% endif %}
+                                            {% if latest_run.training_result.recall %}
+                                                <p><strong>재현율:</strong> {{ latest_run.training_result.recall|floatformat:3 }}</p>
+                                            {% endif %}
+                                            {% if latest_run.training_result.f1_score %}
+                                                <p><strong>F1 스코어:</strong> {{ latest_run.training_result.f1_score|floatformat:3 }}</p>
+                                            {% endif %}
+                                            <p><strong>훈련 시간:</strong> {{ latest_run.training_result.training_duration_seconds|floatformat:1 }}초</p>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if latest_run.actual_cpu_cores or latest_run.actual_memory_gb or latest_run.actual_gpu_count %}
+                                        <div class="mb-3">
+                                            <h6>실제 자원 사용량</h6>
+                                            {% if latest_run.actual_cpu_cores %}
+                                                <p><strong>CPU:</strong> {{ latest_run.actual_cpu_cores }} 코어</p>
+                                            {% endif %}
+                                            {% if latest_run.actual_memory_gb %}
+                                                <p><strong>메모리:</strong> {{ latest_run.actual_memory_gb|floatformat:1 }}GB</p>
+                                            {% endif %}
+                                            {% if latest_run.actual_gpu_count %}
+                                                <p><strong>GPU:</strong> {{ latest_run.actual_gpu_count }}개</p>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+
+                                <div class="text-muted">
+                                    <small>
+                                        생성: {{ experiment.created_at|date:"Y-m-d H:i" }}<br>
+                                        {% if experiment.completed_at %}
+                                            완료: {{ experiment.completed_at|date:"Y-m-d H:i" }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{% url 'mymlopsapp1:experiment_detail' experiment.pk %}" class="btn btn-sm btn-outline-primary">
+                                    상세보기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- 비교 요약 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">비교 요약</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>성능 비교</h6>
+                                        <p>여러 실험의 성능 지표를 비교하여 최적의 모델을 선택할 수 있습니다.</p>
+                                        <ul>
+                                            <li>정확도, 정밀도, 재현율, F1 스코어 비교</li>
+                                            <li>훈련 시간 및 자원 효율성 분석</li>
+                                            <li>모델 복잡도와 성능의 트레이드오프</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>자원 효율성</h6>
+                                        <p>실제 사용된 자원과 할당된 자원을 비교하여 효율성을 분석합니다.</p>
+                                        <ul>
+                                            <li>CPU, 메모리, GPU 사용량 분석</li>
+                                            <li>자원 활용도 최적화</li>
+                                            <li>비용 효율적인 자원 할당</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h4 class="text-muted">비교할 실험이 없습니다.</h4>
+                    <p class="text-muted">완료된 실험을 선택해주세요.</p>
+                    <a href="{% url 'mymlopsapp1:compare_experiments' %}" class="btn btn-primary">
+                        실험 선택하기
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}

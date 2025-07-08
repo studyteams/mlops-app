@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ experiment.name }} - 실행 {{ run.run_number }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>{{ experiment.name }} - 실행 {{ run.run_number }}</h2>
+                    <p class="text-muted mb-0">실행 ID: {{ run.run_id }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'mymlopsapp1:experiment_detail' experiment.pk %}" class="btn btn-secondary">
+                        실험으로 돌아가기
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- 실행 정보 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">실행 정보</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>기본 정보</h6>
+                                    <p><strong>실행 번호:</strong> {{ run.run_number }}</p>
+                                    <p><strong>실행 ID:</strong> {{ run.run_id }}</p>
+                                    <p><strong>상태:</strong>
+                                        <span class="badge {% if run.status == 'completed' %}bg-success{% elif run.status == 'running' %}bg-warning{% elif run.status == 'failed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ run.get_status_display }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>시간 정보</h6>
+                                    <p><strong>생성일:</strong> {{ run.created_at|date:"Y-m-d H:i" }}</p>
+                                    {% if run.started_at %}
+                                        <p><strong>시작일:</strong> {{ run.started_at|date:"Y-m-d H:i" }}</p>
+                                    {% endif %}
+                                    {% if run.completed_at %}
+                                        <p><strong>완료일:</strong> {{ run.completed_at|date:"Y-m-d H:i" }}</p>
+                                    {% endif %}
+                                    {% if run.duration_seconds %}
+                                        <p><strong>소요 시간:</strong> {{ run.duration_seconds|floatformat:1 }}초</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 자원 사용량 -->
+                    {% if run.actual_cpu_cores or run.actual_memory_gb or run.actual_gpu_count %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">실제 자원 사용량</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% if run.actual_cpu_cores %}
+                                <div class="col-md-4">
+                                    <h6>CPU</h6>
+                                    <p><strong>사용 코어:</strong> {{ run.actual_cpu_cores }}개</p>
+                                </div>
+                                {% endif %}
+                                {% if run.actual_memory_gb %}
+                                <div class="col-md-4">
+                                    <h6>메모리</h6>
+                                    <p><strong>사용 메모리:</strong> {{ run.actual_memory_gb|floatformat:1 }}GB</p>
+                                </div>
+                                {% endif %}
+                                {% if run.actual_gpu_count %}
+                                <div class="col-md-4">
+                                    <h6>GPU</h6>
+                                    <p><strong>사용 GPU:</strong> {{ run.actual_gpu_count }}개</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 훈련 결과 -->
+                    {% if run.training_result %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">훈련 결과</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>성능 지표</h6>
+                                    {% if run.training_result.accuracy %}
+                                        <p><strong>정확도:</strong> {{ run.training_result.accuracy|floatformat:3 }}</p>
+                                    {% endif %}
+                                    {% if run.training_result.precision %}
+                                        <p><strong>정밀도:</strong> {{ run.training_result.precision|floatformat:3 }}</p>
+                                    {% endif %}
+                                    {% if run.training_result.recall %}
+                                        <p><strong>재현율:</strong> {{ run.training_result.recall|floatformat:3 }}</p>
+                                    {% endif %}
+                                    {% if run.training_result.f1_score %}
+                                        <p><strong>F1 스코어:</strong> {{ run.training_result.f1_score|floatformat:3 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>훈련 정보</h6>
+                                    <p><strong>훈련 시간:</strong> {{ run.training_result.training_duration_seconds|floatformat:1 }}초</p>
+                                    <p><strong>버전:</strong> {{ run.training_result.version }}</p>
+                                    <p><strong>훈련 완료:</strong> {{ run.training_result.trained_at|date:"Y-m-d H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 로그 -->
+                    {% if run.logs %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">실행 로그</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre class="bg-light p-3 rounded"><code>{{ run.logs }}</code></pre>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 오류 메시지 -->
+                    {% if run.error_message %}
+                    <div class="card mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">오류 메시지</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre class="bg-light p-3 rounded text-danger"><code>{{ run.error_message }}</code></pre>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <!-- 실험 정보 요약 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">실험 정보</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>실험명:</strong> {{ experiment.name }}</p>
+                            <p><strong>버전:</strong> v{{ experiment.version }}</p>
+                            <p><strong>데이터셋:</strong> {{ experiment.dataset_config.name }}</p>
+                            <p><strong>모델:</strong> {{ experiment.model_config.name }}</p>
+                            <p><strong>자원 할당:</strong> {{ experiment.resource_allocation.name }}</p>
+                        </div>
+                    </div>
+
+                    <!-- 할당된 자원 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">할당된 자원</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>CPU:</strong> {{ experiment.resource_allocation.cpu_cores }} 코어</p>
+                            <p><strong>메모리:</strong> {{ experiment.resource_allocation.memory_gb }}GB</p>
+                            <p><strong>GPU:</strong> {{ experiment.resource_allocation.gpu_count }}개</p>
+                            {% if experiment.resource_allocation.gpu_count > 0 %}
+                                <p><strong>GPU 메모리:</strong> {{ experiment.resource_allocation.gpu_memory_gb }}GB</p>
+                            {% endif %}
+                            <p><strong>최대 시간:</strong> {{ experiment.resource_allocation.max_training_time_hours }}시간</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

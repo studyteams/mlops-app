@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}모델 학습 결과{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">모델 학습 결과</h1>
+
+    {% if evaluation_results %}
+        <div class="card shadow-sm p-4 mb-4 bg-white rounded">
+            <h5 class="card-title text-success">모델 학습 성공!</h5>
+            <p><strong>실행 ID:</strong> <code>{{ run_id }}</code></p>
+            <p><strong>타임스탬프:</strong> {{ timestamp }}</p>
+            <p><strong>모델 이름:</strong> {{ model_name }}</p>
+            <p><strong>데이터셋 이름:</strong> {{ dataset_name }}</p>
+            <p><strong>피처 셋:</strong> {{ feature_name }}</p>
+            <p><strong>모델 타입:</strong> {{ model_type }}</p>
+
+            {% if model_type == 'LogisticRegression' or model_type == 'RandomForestClassifier' %}
+                <h2 class="mt-4">분류 지표:</h2>
+                <p><strong>정확도 (Accuracy):</strong> {{ evaluation_results.accuracy|floatformat:4 }}</p>
+
+                <h3 class="mt-3">분류 리포트:</h3>
+                {# JSON 데이터를 안전하게 HTML로 전달하고, 보기 좋게 표시 #}
+                <pre id="classification_report_data" style="display:none;">{{ evaluation_results.classification_report|json_script:"classification_report_data" }}</pre>
+                <div id="report-output"></div>
+                <script>
+                    const reportData = JSON.parse(document.getElementById('classification_report_data').textContent);
+                    let outputHtml = '<table class="table table-bordered table-striped metrics-table">';
+                    outputHtml += '<thead><tr><th></th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr></thead>';
+                    outputHtml += '<tbody>';
+
+                    for (const key in reportData) {
+                        if (reportData.hasOwnProperty(key) && typeof reportData[key] === 'object' && !['accuracy', 'macro avg', 'weighted avg'].includes(key)) {
+                            outputHtml += `<tr><td>${key}</td><td>${reportData[key]['precision'].toFixed(4)}</td><td>${reportData[key]['recall'].toFixed(4)}</td><td>${reportData[key]['f1-score'].toFixed(4)}</td><td>${reportData[key]['support']}</td></tr>`;
+                        }
+                    }
+                    if (reportData['accuracy']) {
+                        outputHtml += `<tr><td>Accuracy</td><td colspan="3">${reportData['accuracy'].toFixed(4)}</td><td>${reportData['macro avg'].support}</td></tr>`;
+                    }
+                    if (reportData['macro avg']) {
+                        outputHtml += `<tr><td>Macro Avg</td><td>${reportData['macro avg']['precision'].toFixed(4)}</td><td>${reportData['macro avg']['recall'].toFixed(4)}</td><td>${reportData['macro avg']['f1-score'].toFixed(4)}</td><td>${reportData['macro avg']['support']}</td></tr>`;
+                    }
+                    if (reportData['weighted avg']) {
+                        outputHtml += `<tr><td>Weighted Avg</td><td>${reportData['weighted avg']['precision'].toFixed(4)}</td><td>${reportData['weighted avg']['recall'].toFixed(4)}</td><td>${reportData['weighted avg']['f1-score'].toFixed(4)}</td><td>${reportData['weighted avg']['support']}</td></tr>`;
+                    }
+                    outputHtml += '</tbody></table>';
+                    document.getElementById('report-output').innerHTML = outputHtml;
+                </script>
+
+            {% elif model_type == 'LinearRegression' or model_type == 'RandomForestRegressor' %}
+                <h2 class="mt-4">회귀 지표:</h2>
+                <p><strong>평균 제곱 오차 (MSE):</strong> {{ evaluation_results.mse|floatformat:4 }}</p>
+                <p><strong>결정 계수 (R2 Score):</strong> {{ evaluation_results.r2_score|floatformat:4 }}</p>
+            {% endif %}
+
+            <p class="mt-4">모델 파일 저장 경로: <code>{{ model_filename }}</code></p>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            학습된 모델 결과가 없습니다. 먼저 모델을 학습시켜 주세요.
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'mymlopsapp1:train_model' %}" class="btn btn-primary me-2">다른 모델 학습하기</a>
+        <a href="{% url 'mymlopsapp1:compare_results' %}" class="btn btn-secondary me-2">모든 결과 비교하기</a>
+        <a href="{% url 'mymlopsapp1:home' %}" class="btn btn-outline-secondary">홈으로</a>
+    </div>
+{% endblock %}

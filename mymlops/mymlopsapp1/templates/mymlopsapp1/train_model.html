@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}모델 학습{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">ML 모델 학습</h1>
+    <p class="lead">데이터셋, 피처, 모델 구성을 선택한 후 버튼을 클릭하여 학습을 시작하세요.</p>
+
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            오류: {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="post" class="mt-4 p-4 border rounded shadow-sm bg-white">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="dataset_config" class="form-label">데이터셋 구성 선택:</label>
+            <select name="dataset_config" id="dataset_config" class="form-select" required>
+                <option value="">-- 데이터셋 선택 --</option>
+                {% for config in dataset_configs %}
+                    <option value="{{ config.id }}">{{ config.name }} (파일: {{ config.file_path }}, 타겟: {{ config.target_column }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="feature_config" class="form-label">피처 구성 선택:</label>
+            <select name="feature_config" id="feature_config" class="form-select" required>
+                <option value="">-- 피처 셋 선택 --</option>
+                {% for config in feature_configs %}
+                    <option value="{{ config.id }}">{{ config.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="model_config" class="form-label">모델 구성 선택:</label>
+            <select name="model_config" id="model_config" class="form-select" required>
+                <option value="">-- 모델 선택 --</option>
+                {% for config in model_configs %}
+                    <option value="{{ config.id }}">{{ config.name }} (타입: {{ config.model_type }}, 데이터셋: {{ config.dataset_config.name }}, 피처: {{ config.feature_config.name }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg mt-3">학습 시작</button>
+    </form>
+{% endblock %}

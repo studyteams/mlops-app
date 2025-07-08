@@ -1,0 +1,39 @@
+{% extends 'mymlopsapp1/base.html' %}
+
+{% block title %}데이터셋 목록{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>데이터셋 목록</h2>
+    <a href="{% url 'dataset_upload' %}" class="btn btn-success">새 데이터셋 업로드</a>
+</div>
+
+{% if datasets %}
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>이름</th>
+            <th>설명</th>
+            <th>파일</th>
+            <th>업로드 날짜</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dataset in datasets %}
+        <tr>
+            <td>{{ dataset.id }}</td>
+            <td>{{ dataset.name }}</td>
+            <td>{{ dataset.description|default:"-" }}</td>
+            <td><a href="{{ dataset.file.url }}" target="_blank">{{ dataset.file.name|cut:"data_files/" }}</a></td>
+            <td>{{ dataset.uploaded_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info" role="alert">
+    업로드된 데이터셋이 없습니다. <a href="{% url 'dataset_upload' %}">새 데이터셋을 업로드</a>해주세요.
+</div>
+{% endif %}
+{% endblock %}

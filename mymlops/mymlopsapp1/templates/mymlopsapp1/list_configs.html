@@ -1,0 +1,88 @@
+{# mymlopsapp1/templates/mymlopsapp1/list_configs.html #}
+{% extends 'base.html' %}
+
+{% block title %}{{ config_type }} 구성 목록{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">{{ config_type }} 구성 목록</h1>
+    <div class="mb-3">
+        <a href="{% url create_url_name %}" class="btn btn-success me-2">새 {{ config_type }} 구성 생성</a>
+        {% if config_type == 'Dataset' %}
+            <a href="{% url 'mymlopsapp1:dataset_upload' %}" class="btn btn-info">새 데이터셋 파일 업로드</a>
+        {% endif %}
+    </div>
+
+    {% if configs %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover shadow-sm bg-white rounded">
+                <thead class="table-dark">
+                    <tr>
+                        <th>이름</th>
+                        {% if config_type == 'Dataset' %}
+                            <th>파일 경로</th>
+                            <th>타겟 컬럼</th>
+                        {% elif config_type == 'Feature' %}
+                            <th>데이터셋</th>
+                            <th>피처 목록</th> {# 이 부분을 수정합니다 #}
+                        {% elif config_type == 'Model' %}
+                            <th>데이터셋</th>
+                            <th>피처 셋</th>
+                            <th>모델 타입</th>
+                            <th>파라미터</th>
+                        {% endif %}
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for config in configs %}
+                        <tr>
+                            <td>{{ config.name }}</td>
+                            {% if config_type == 'Dataset' %}
+                                <td>{{ config.file_path }}</td>
+                                <td>{{ config.target_column }}</td>
+                            {% elif config_type == 'Feature' %}
+                                <td>{{ config.dataset_config.name }}</td>
+                                <td>
+                                    {# JSON 문자열을 안전하게 JS로 전달하고 파싱하여 보기 좋게 표시 #}
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            onclick="try {
+                                                        var features = JSON.parse(document.getElementById('features_{{ config.id }}').textContent);
+                                                        alert(features.join('\\n'));
+                                                    } catch (e) {
+                                                        alert('JSON 파싱 오류: ' + e + '\\n원본 데이터: ' + document.getElementById('features_{{ config.id }}').textContent);
+                                                    }">보기</button>
+                                    {# data-id를 사용하여 고유한 ID를 부여 #}
+                                    <pre id="features_{{ config.id }}" style="display:none;">{{ config.features|escapejs }}</pre>
+                                </td>
+                            {% elif config_type == 'Model' %}
+                                <td>{{ config.dataset_config.name }}</td>
+                                <td>{{ config.feature_config.name }}</td>
+                                <td>{{ config.model_type }}</td>
+                                <td>
+                                    {# ModelConfig.parameters도 TextField이므로 동일하게 JSON.parse 적용 #}
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            onclick="try {
+                                                        var params = JSON.parse(document.getElementById('params_{{ config.id }}').textContent);
+                                                        alert(JSON.stringify(params, null, 2));
+                                                    } catch (e) {
+                                                        alert('JSON 파싱 오류: ' + e + '\\n원본 데이터: ' + document.getElementById('params_{{ config.id }}').textContent);
+                                                    }">보기</button>
+                                    <pre id="params_{{ config.id }}" style="display:none;">{{ config.parameters|escapejs }}</pre>
+                                </td>
+                            {% endif %}
+                            <td>{{ config.description|default:"-" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            등록된 {{ config_type }} 구성이 없습니다.
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'mymlopsapp1:home' %}" class="btn btn-outline-secondary">홈으로</a>
+    </div>
+{% endblock %}
