@@ -1,6 +1,9 @@
 # MLOps 원앱 솔루션
 
 Django 기반의 통합 MLOps 플랫폼으로, 머신러닝 워크플로우의 전체 라이프사이클을 관리할 수 있습니다.
+![CleanShot 2025-07-09 at 00 57 16](https://github.com/user-attachments/assets/2140b6eb-5573-40bc-b80b-2f3c6ed33432)
+
+![CleanShot 2025-07-09 at 00 57 38](https://github.com/user-attachments/assets/0f93dc22-56c9-4f2c-99aa-c9268c4eda7b)
 
 ## 🚀 주요 기능
 
